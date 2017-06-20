@@ -46,7 +46,10 @@ def parse_configfile(
     pass
 
 class ScrapeSeattle(cli.Application):
-    """application to scrape data from data.seattle.gov"""
+    """application to scrape data from data.seattle.gov
+
+    MORE INFO: http://plumbum.readthedocs.io/en/latest/cli.html
+    """
 
     debug = cli.Flag(
         ['d', '--debug'],
