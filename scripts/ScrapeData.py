@@ -15,6 +15,12 @@ LOGGER = logging.getLogger('NULL')
 LOGGER.addHandler(logging.NullHandler())
 CONFIG = configparser.ConfigParser()
 
+DATASETS = {
+    'i5jq-ms7b': 'Building-Permits-Current',
+    #'uyyd-8gak': 'Land-Use-Permits',
+    #'txjd-pq99': 'Trade-Permits-Current',
+    #'raim-ay5x': 'Electrical-Permits-Current'
+}
 def build_logger(
         log_name,
         log_path,
@@ -92,6 +98,40 @@ def parse_configfile(
 
     return config
 
+def fetch_data(
+        dataset_id,
+        socrata_client,
+        logger=LOGGER
+):
+    """fetch and parse data from socrata endpoint
+
+    TODO:
+        **kwargs for get modifiers
+
+    Args:
+        dataset_id (str): 'name' of dataset for searching
+        socrata_client (:obj:`sodapy.Socrata`): client for connecting
+        logger (:obj:`logging.logger`, optional): logging handle
+
+    Returns:
+        (:obj:`pandas.DataFrame`)
+
+    """
+    logger.info('--fetching data: %s', dataset_id)
+    try:
+        data = socrata_client.get_metadata(dataset_id)
+    except Exception:
+        logger.error(
+            'Unable to fetch datasource %s',
+            dataset_id,
+            exc_info=True
+        )
+        raise
+
+    logger.debug(data)
+
+    return data
+
 class ScrapeSeattle(cli.Application):
     """application to scrape data from data.seattle.gov
 
@@ -131,6 +171,21 @@ class ScrapeSeattle(cli.Application):
 
         LOGGER.info('hello world')
         LOGGER.info('username=%s', CONFIG.get('AUTH', 'username'))
+
+        client = Socrata(
+            CONFIG.get('ScrapeData', 'hostname'),
+            CONFIG.get('AUTH', 'app_token'),
+            #username=CONFIG.get('AUTH', 'username'),
+            #password=CONFIG.get('AUTH', 'password')
+        )
+
+        for source, name in DATASETS.items():
+            #TODO: cli progress bar
+            data = fetch_data(
+                source,
+                client,
+                logger=LOGGER
+            )
 
 if __name__ == '__main__':
     ScrapeSeattle.run()
