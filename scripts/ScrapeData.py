@@ -54,6 +54,7 @@ def build_logger(
         '[%(asctime)s;%(levelname)s;%(filename)s;%(funcName)s;%(lineno)s] %(message)s'
     )
     general_handler.setFormatter(formatter)
+    general_handler.setLevel('INFO')
     logger.addHandler(general_handler)
     logger.setLevel('INFO')
 
@@ -64,7 +65,7 @@ def build_logger(
         )
         verbose_handler.setFormatter(verbose_formatter)
         verbose_handler.setLevel('DEBUG')
-
+        logger.setLevel('DEBUG')
         logger.addHandler(verbose_handler)
 
     return logger
@@ -181,6 +182,7 @@ class ScrapeSeattle(cli.Application):
 
         for source, name in DATASETS.items():
             #TODO: cli progress bar
+            LOGGER.info('FETCHING: %s', name)
             data = fetch_data(
                 source,
                 client,
